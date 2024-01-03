@@ -26,7 +26,7 @@ pub mod polynomials {
     use std::{
         collections::BTreeMap,
         fmt::Display,
-        ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign},
+        ops::{Add, AddAssign, Div, Mul, Sub},
     };
 
     #[derive(Debug, Clone, PartialEq)]
@@ -149,14 +149,6 @@ pub mod polynomials {
             out
         }
     }
-    impl<T> MulAssign<Polynomial<T>> for Polynomial<T>
-    where
-        T: Num + Copy + PartialOrd,
-    {
-        fn mul_assign(&mut self, rhs: Self) {
-            *self = self.clone() * rhs;
-        }
-    }
 
     impl<T: Num> Mul<PolynomialTerm<T>> for PolynomialTerm<T> {
         type Output = PolynomialTerm<T>;
@@ -198,11 +190,6 @@ pub mod polynomials {
         }
     }
 
-    impl<T: Num + Copy + PartialOrd> AddAssign for Polynomial<T> {
-        fn add_assign(&mut self, rhs: Self) {
-            *self = self.clone() + rhs
-        }
-    }
     impl<T: Num + Copy + Signed + PartialOrd> Sub for Polynomial<T> {
         type Output = Polynomial<T>;
 
@@ -213,11 +200,6 @@ pub mod polynomials {
                 term.coefficient = -term.coefficient
             }
             self + cloned
-        }
-    }
-    impl<T: Num + Copy + PartialOrd + Signed> SubAssign for Polynomial<T> {
-        fn sub_assign(&mut self, rhs: Self) {
-            *self = self.clone() - rhs
         }
     }
     pub struct DivOutput<T: Num> {
@@ -251,7 +233,7 @@ pub mod polynomials {
         fn pow(self, rhs: i32) -> Self::Output {
             let mut poly = Polynomial::new_from_num_vec(vec![T::one()]);
             for _ in 0..rhs {
-                poly *= self.clone();
+                poly = poly * self.clone();
             }
             todo!()
         }

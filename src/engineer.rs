@@ -11,7 +11,7 @@ pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy
     let mut poly: Polynomial<T> = Polynomial::new_from_num_vec(vec![leading_coefficient]);
     for zero in zeros {
         let temp_poly = Polynomial::new_from_num_vec(vec![T::one(), -zero]);
-        poly *= temp_poly
+        poly = poly * temp_poly
     }
     poly
 }
