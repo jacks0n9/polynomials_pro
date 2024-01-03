@@ -79,7 +79,7 @@ pub mod polynomials {
         }
     }
     impl<T: Num + Copy + PartialOrd> Polynomial<T> {
-        pub fn new_with_term_vec(terms: Vec<PolynomialTerm<T>>) -> Self {
+        pub fn new_from_term_vec(terms: Vec<PolynomialTerm<T>>) -> Self {
             let mut new = Polynomial(Vec::new());
             for term in terms {
                 new.push_term(term);
@@ -127,7 +127,7 @@ pub mod polynomials {
         type Output = Polynomial<T>;
 
         fn mul(self, rhs: Polynomial<T>) -> Self::Output {
-            let mut out = Polynomial::new_with_term_vec(Vec::new());
+            let mut out = Polynomial::new_from_term_vec(Vec::new());
 
             for lht in self.0 {
                 for rht in rhs.0.iter() {
@@ -247,7 +247,7 @@ pub mod polynomials {
     }
     impl<T: Num + Display + Copy + PartialOrd + Signed> Display for PolynomialTerm<T> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            let poly = Polynomial::new_with_term_vec(vec![*self]);
+            let poly = Polynomial::new_from_term_vec(vec![*self]);
 
             write!(f, "{}", poly)
         }
@@ -258,7 +258,7 @@ pub mod polynomials {
         fn div(self, rhs: Self) -> Self::Output {
             let binding = rhs.clone();
             let first_divisor_term = binding.0.get(0).unwrap();
-            let mut answer = Polynomial::new_with_term_vec(Vec::new());
+            let mut answer = Polynomial::new_from_term_vec(Vec::new());
             let mut remainder = self;
             while remainder.get_degree() >= rhs.get_degree() {
                 let factor = *remainder.0.get(0).unwrap() / first_divisor_term.clone();

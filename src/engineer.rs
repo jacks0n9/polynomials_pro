@@ -2,7 +2,7 @@ use std::ops::Neg;
 
 use num::{Num, traits::Pow};
 
-use crate::polynomials::{Polynomial, PolynomialTerm};
+use crate::polynomials::Polynomial;
 pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy>(
     zeros: Vec<T>,
     leading_coefficient: T
@@ -10,16 +10,7 @@ pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy
     // Create a neutral polynomial.
     let mut poly: Polynomial<T> = Polynomial::new_from_num_vec(vec![leading_coefficient]);
     for zero in zeros {
-        let temp_poly: Polynomial<T> = Polynomial::new_with_term_vec(vec![
-            PolynomialTerm {
-                coefficient: -zero,
-                power: 0,
-            },
-            PolynomialTerm {
-                coefficient: T::one(),
-                power: 1,
-            },
-        ]);
+        let temp_poly=Polynomial::new_from_num_vec(vec![T::one(),-zero]);
         poly *= temp_poly
     }
     poly
