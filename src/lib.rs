@@ -32,7 +32,7 @@ pub mod polynomials {
         pub power: i64,
         pub coefficient: T,
     }
-    impl<T: Num + Copy + Ord> Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd> Polynomial<T> {
         fn combine_like_terms(&mut self) {
             let mut term_map = BTreeMap::new();
             for term in self.0.iter() {
@@ -53,15 +53,15 @@ pub mod polynomials {
             self.0.sort_by(|a, b| b.power.cmp(&a.power));
         }
         /// Get terms of a polynomial.
-        /// This is guaranteed to be sorted in decreasing order of power as well has having no terms with the same power.
+        /// This is guaranteed to be sorted in decreasing PartialOrder of power as well has having no terms with the same power.
         /// i.e. this function gets the terms of the polynomial in simplest form.
         pub fn get_terms(&mut self) -> Vec<PolynomialTerm<T>> {
             self.combine_like_terms();
             self.0.clone()
         }
     }
-    impl<T: Num + Copy + Ord> Polynomial<T> {
-        /// Pushes a term to the polynomial and sorts the terms into order.
+    impl<T: Num + Copy + PartialOrd> Polynomial<T> {
+        /// Pushes a term to the polynomial and sorts the terms into PartialOrder.
         pub fn push_term(&mut self, term: PolynomialTerm<T>) {
             self.0.push(term);
             self.0.sort_by(|a, b| b.power.cmp(&a.power));
@@ -78,7 +78,7 @@ pub mod polynomials {
             0
         }
     }
-    impl<T: Num + Copy + Ord> Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd> Polynomial<T> {
         pub fn new_with_term_vec(terms: Vec<PolynomialTerm<T>>) -> Self {
             let mut new = Polynomial(Vec::new());
             for term in terms {
@@ -123,7 +123,7 @@ pub mod polynomials {
             write!(f, "{}", formatted_equation)
         }
     }
-    impl<T: Num + Copy + Ord> Mul<Polynomial<T>> for Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd> Mul<Polynomial<T>> for Polynomial<T> {
         type Output = Polynomial<T>;
 
         fn mul(self, rhs: Polynomial<T>) -> Self::Output {
@@ -139,12 +139,13 @@ pub mod polynomials {
     }
     impl<T> MulAssign<Polynomial<T>> for Polynomial<T>
     where
-        T: Num + Copy + Ord,
+        T: Num + Copy + PartialOrd,
     {
         fn mul_assign(&mut self, rhs: Self) {
             *self = self.clone() * rhs;
         }
     }
+
     impl<T: Num> Mul<PolynomialTerm<T>> for PolynomialTerm<T> {
         type Output = PolynomialTerm<T>;
 
@@ -164,7 +165,18 @@ pub mod polynomials {
         }
     }
 
-    impl<T: Num + Copy + Ord> Add for Polynomial<T> {
+    impl<T: Num+Copy> Mul<T> for Polynomial<T>{
+        type Output = Polynomial<T>;
+
+        fn mul(self, rhs: T) -> Self::Output {
+            self*PolynomialTerm{
+                coefficient:rhs,
+                power:0
+            }
+        }
+        
+    }
+    impl<T: Num + Copy + PartialOrd> Add for Polynomial<T> {
         type Output = Polynomial<T>;
 
         fn add(self, rhs: Self) -> Self::Output {
@@ -175,12 +187,12 @@ pub mod polynomials {
         }
     }
 
-    impl<T: Num + Copy + Ord> AddAssign for Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd> AddAssign for Polynomial<T> {
         fn add_assign(&mut self, rhs: Self) {
             *self = self.clone() + rhs
         }
     }
-    impl<T: Num + Copy + Signed + Ord> Sub for Polynomial<T> {
+    impl<T: Num + Copy + Signed + PartialOrd> Sub for Polynomial<T> {
         type Output = Polynomial<T>;
 
         fn sub(self, rhs: Self) -> Self::Output {
@@ -192,7 +204,7 @@ pub mod polynomials {
             return self + cloned;
         }
     }
-    impl<T: Num + Copy + Ord + Signed> SubAssign for Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd + Signed> SubAssign for Polynomial<T> {
         fn sub_assign(&mut self, rhs: Self) {
             *self = self.clone() - rhs
         }
@@ -222,7 +234,7 @@ pub mod polynomials {
             return out;
         }
     }
-    impl<T: Num+Copy+Ord> num::pow::Pow<i32> for Polynomial<T>{
+    impl<T: Num+Copy+PartialOrd> num::pow::Pow<i32> for Polynomial<T>{
         type Output=Polynomial<T>;
 
         fn pow(self, rhs: i32) -> Self::Output {
@@ -233,14 +245,14 @@ pub mod polynomials {
             todo!()
         }
     }
-    impl<T: Num + Display + Copy + Ord + Signed> Display for PolynomialTerm<T> {
+    impl<T: Num + Display + Copy + PartialOrd + Signed> Display for PolynomialTerm<T> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             let poly = Polynomial::new_with_term_vec(vec![*self]);
 
             write!(f, "{}", poly)
         }
     }
-    impl<T: Num + Copy + Ord + Signed> Div<Polynomial<T>> for Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd + Signed> Div<Polynomial<T>> for Polynomial<T> {
         type Output = DivOutput<T>;
         // Implementation of polynomial long division.
         fn div(self, rhs: Self) -> Self::Output {
@@ -253,6 +265,8 @@ pub mod polynomials {
                 remainder = remainder.clone() - (rhs.clone() * factor);
                 answer.push_term(factor);
             }
+            remainder.combine_like_terms();
+            answer.combine_like_terms();
             DivOutput {
                 remainder,
                 output: answer,
@@ -275,7 +289,7 @@ mod tests {
     fn polynomial_div_with_remainder(){
         let dividend=Polynomial::new_from_num_vec(vec![1.,-12.,38.,-17.]);
         let divisor=Polynomial::new_from_num_vec(vec![3.,18.,14.]);
-        assert_eq!((dividend/divisor).remainder,Polynomial::new_from_num_vec(vec![424/3]))
+        assert_eq!((dividend/divisor).remainder,Polynomial::new_from_num_vec(vec![424./3.,67.]))
     }
     #[test]
     fn polynomial_mul(){
