@@ -5,9 +5,10 @@ use num::{Num, traits::Pow};
 use crate::polynomials::{Polynomial, PolynomialTerm};
 pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy>(
     zeros: Vec<T>,
+    leading_coefficient: T
 ) -> Polynomial<T> {
     // Create a neutral polynomial.
-    let mut poly: Polynomial<T> = Polynomial::new_from_num_vec(vec![T::one()]);
+    let mut poly: Polynomial<T> = Polynomial::new_from_num_vec(vec![leading_coefficient]);
     for zero in zeros {
         let temp_poly: Polynomial<T> = Polynomial::new_with_term_vec(vec![
             PolynomialTerm {
