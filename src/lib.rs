@@ -88,7 +88,7 @@ pub mod polynomials {
         }
         /// This function takes a vector of numbers, where each element has a power one less than the element before it, with the first element having the power of the length of the vector.
         pub fn new_from_num_vec(terms: Vec<T>) -> Self {
-            let degree = terms.len()-1;
+            let degree = terms.len() - 1;
             let mut polynomial_terms: Vec<PolynomialTerm<T>> = Vec::new();
             for (i, term) in terms.iter().enumerate() {
                 polynomial_terms.push(PolynomialTerm {
@@ -165,16 +165,15 @@ pub mod polynomials {
         }
     }
 
-    impl<T: Num+Copy> Mul<T> for Polynomial<T>{
+    impl<T: Num + Copy> Mul<T> for Polynomial<T> {
         type Output = Polynomial<T>;
 
         fn mul(self, rhs: T) -> Self::Output {
-            self*PolynomialTerm{
-                coefficient:rhs,
-                power:0
+            self * PolynomialTerm {
+                coefficient: rhs,
+                power: 0,
             }
         }
-        
     }
     impl<T: Num + Copy + PartialOrd> Add for Polynomial<T> {
         type Output = Polynomial<T>;
@@ -234,13 +233,13 @@ pub mod polynomials {
             return out;
         }
     }
-    impl<T: Num+Copy+PartialOrd> num::pow::Pow<i32> for Polynomial<T>{
-        type Output=Polynomial<T>;
+    impl<T: Num + Copy + PartialOrd> num::pow::Pow<i32> for Polynomial<T> {
+        type Output = Polynomial<T>;
 
         fn pow(self, rhs: i32) -> Self::Output {
-            let mut poly=Polynomial::new_from_num_vec(vec![T::one()]);
-            for _ in 0..rhs{
-                poly*=self.clone();
+            let mut poly = Polynomial::new_from_num_vec(vec![T::one()]);
+            for _ in 0..rhs {
+                poly *= self.clone();
             }
             todo!()
         }
@@ -286,15 +285,21 @@ mod tests {
         assert_eq!(divided.output, poly2);
     }
     #[test]
-    fn polynomial_div_with_remainder(){
-        let dividend=Polynomial::new_from_num_vec(vec![1.,-12.,38.,-17.]);
-        let divisor=Polynomial::new_from_num_vec(vec![3.,18.,14.]);
-        assert_eq!((dividend/divisor).remainder,Polynomial::new_from_num_vec(vec![424./3.,67.]))
+    fn polynomial_div_with_remainder() {
+        let dividend = Polynomial::new_from_num_vec(vec![1., -12., 38., -17.]);
+        let divisor = Polynomial::new_from_num_vec(vec![3., 18., 14.]);
+        assert_eq!(
+            (dividend / divisor).remainder,
+            Polynomial::new_from_num_vec(vec![424. / 3., 67.])
+        )
     }
     #[test]
-    fn polynomial_mul(){
+    fn polynomial_mul() {
         let poly1 = Polynomial::new_from_num_vec(vec![1, 5, 6]);
         let poly2 = Polynomial::new_from_num_vec(vec![5, 6, 9, 6]);
-        assert_eq!(poly1 * poly2,Polynomial::new_from_num_vec(vec![5,31,69,87,84,36]));
+        assert_eq!(
+            poly1 * poly2,
+            Polynomial::new_from_num_vec(vec![5, 31, 69, 87, 84, 36])
+        );
     }
 }
