@@ -1,5 +1,5 @@
 #![feature(map_try_insert)]
-//! A crate for working with polynomials easily
+//! A crate for working with polynomials easily.
 /// A module for engineering polynomials.
 ///
 /// It only has two functions because I forgot what I was going to do with it.
