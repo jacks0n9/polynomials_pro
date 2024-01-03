@@ -1,5 +1,9 @@
 #![feature(map_try_insert)]
 //! A crate for working with polynomials easily
+/// A module for engineering polynomials.
+///
+/// It only has two functions because I forgot what I was going to do with it.
+/// Please leave suggestions in the Github issues.
 pub mod engineer;
 /// An implementation of polynomial arithmetic with all four basic operations and the `pow` trait.
 ///
@@ -39,8 +43,8 @@ pub mod polynomials {
                 if term.coefficient.is_zero() {
                     continue;
                 }
-                if let Err(mut occupied) = term_map.try_insert(term.power, term.coefficient) {
-                    *occupied.entry.into_mut() = *&mut occupied.value + *occupied.entry.get();
+                if let Err(occupied) = term_map.try_insert(term.power, term.coefficient) {
+                    *occupied.entry.into_mut() = occupied.value + *occupied.entry.get();
                 }
             }
             self.0.clear();
@@ -96,14 +100,14 @@ pub mod polynomials {
                     coefficient: *term,
                 });
             }
-            return Self(polynomial_terms);
+            Self(polynomial_terms)
         }
     }
-    impl<T: Num+Copy+PartialOrd+num::pow::Pow<i64, Output = T>+AddAssign> Polynomial<T>{
-        pub fn evaluate(&mut self,x: T)->T{
-            let mut answer=T::zero();
-            for term in self.get_terms(){
-                answer+=term.coefficient*x.pow(term.power);
+    impl<T: Num + Copy + PartialOrd + num::pow::Pow<i64, Output = T> + AddAssign> Polynomial<T> {
+        pub fn evaluate(&mut self, x: T) -> T {
+            let mut answer = T::zero();
+            for term in self.get_terms() {
+                answer += term.coefficient * x.pow(term.power);
             }
             answer
         }
@@ -208,7 +212,7 @@ pub mod polynomials {
             for term in cloned.0.iter_mut() {
                 term.coefficient = -term.coefficient
             }
-            return self + cloned;
+            self + cloned
         }
     }
     impl<T: Num + Copy + PartialOrd + Signed> SubAssign for Polynomial<T> {
@@ -236,9 +240,9 @@ pub mod polynomials {
         fn div(self, rhs: PolynomialTerm<T>) -> Self::Output {
             let mut out = self;
             for term in out.0.iter_mut() {
-                *term = *&mut (term.clone() / rhs.clone())
+                *term = *term / rhs;
             }
-            return out;
+            out
         }
     }
     impl<T: Num + Copy + PartialOrd> num::pow::Pow<i32> for Polynomial<T> {
@@ -268,7 +272,7 @@ pub mod polynomials {
             let mut answer = Polynomial::new_from_term_vec(Vec::new());
             let mut remainder = self;
             while remainder.get_degree() >= rhs.get_degree() {
-                let factor = *remainder.0.get(0).unwrap() / first_divisor_term.clone();
+                let factor = *remainder.0.get(0).unwrap() / *first_divisor_term;
                 remainder = remainder.clone() - (rhs.clone() * factor);
                 answer.push_term(factor);
             }
