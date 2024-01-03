@@ -99,7 +99,15 @@ pub mod polynomials {
             return Self(polynomial_terms);
         }
     }
-
+    impl<T: Num+Copy+PartialOrd+num::pow::Pow<i64, Output = T>+AddAssign> Polynomial<T>{
+        pub fn evaluate(&mut self,x: T)->T{
+            let mut answer=T::zero();
+            for term in self.get_terms(){
+                answer+=term.coefficient*x.pow(term.power);
+            }
+            answer
+        }
+    }
     impl<T: Num + Signed + Display> Display for Polynomial<T> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             let mut formatted_equation = String::new();
