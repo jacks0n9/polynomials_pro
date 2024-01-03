@@ -6,7 +6,7 @@ edition = "2021"
 repository="https://github.com/jacks0n9/polynomials_pro.git"
 authors=["starryuwu"]
 readme="README.md"
-license="LICENSE"
+license-file="LICENSE"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
