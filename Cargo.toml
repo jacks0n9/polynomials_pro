@@ -1,7 +1,7 @@
 [package]
 name = "polynomials_pro"
 description="A crate for pro-level polynomials."
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 repository="https://github.com/jacks0n9/polynomials_pro.git"
 authors=["starryuwu"]

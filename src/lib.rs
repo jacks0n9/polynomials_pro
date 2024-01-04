@@ -28,12 +28,11 @@ pub mod polynomials {
         fmt::Display,
         ops::{Add, AddAssign, Div, Mul, Sub},
     };
-
     #[derive(Debug, Clone, PartialEq)]
     pub struct Polynomial<T: Num>(Vec<PolynomialTerm<T>>);
     #[derive(Debug, Clone, Copy, PartialEq)]
     pub struct PolynomialTerm<T: Num> {
-        pub power: i64,
+        pub power: u32,
         pub coefficient: T,
     }
     impl<T: Num + Copy + PartialOrd> Polynomial<T> {
@@ -73,7 +72,7 @@ pub mod polynomials {
         }
     }
     impl<T: Num> Polynomial<T> {
-        pub fn get_degree(&self) -> i64 {
+        pub fn get_degree(&self) -> u32 {
             for term in &self.0 {
                 if term.coefficient != T::zero() {
                     return term.power;
@@ -90,20 +89,46 @@ pub mod polynomials {
             }
             new
         }
-        /// This function takes a vector of numbers, where each element has a power one less than the element before it, with the first element having the power of the length of the vector.
-        pub fn new_from_num_vec(terms: Vec<T>) -> Self {
+       
+    }
+    impl<T: Num + Copy + PartialOrd> Polynomial<T>{
+         /// This function takes a vector of numbers, where each element has a power one less than the element before it, with the first element having the power of the length of the vector.
+         pub fn new_from_num_vec(terms: Vec<T>) -> Self {
+            if terms.is_empty(){
+                return Self(vec![])
+            }
             let degree = terms.len() - 1;
             let mut polynomial_terms: Vec<PolynomialTerm<T>> = Vec::new();
             for (i, term) in terms.iter().enumerate() {
                 polynomial_terms.push(PolynomialTerm {
-                    power: (degree - i) as i64,
+                    power: (degree - i) as u32,
                     coefficient: *term,
                 });
             }
-            Self(polynomial_terms)
+            let mut poly = Self(polynomial_terms);
+            poly.combine_like_terms();
+            poly
         }
     }
-    impl<T: Num + Copy + PartialOrd + num::pow::Pow<i64, Output = T> + AddAssign> Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd + Display + Signed + std::ops::DivAssign+num::Float> Polynomial<T> {
+        pub fn new_from_points(points: Vec<(T, T)>) -> Self {
+            let mut poly = Polynomial::new_from_num_vec(vec![]);
+            for point in &points {
+                let mut delta = Polynomial::new_from_num_vec(vec![point.1]);
+                for other_point in &points {
+                    if other_point.0 == point.0 {
+                        continue;
+                    }
+                    delta = delta
+                        * (Polynomial::new_from_term_vec(vec![PolynomialTerm{coefficient:T::one(),power:1},PolynomialTerm{coefficient:-other_point.0,power:0}])
+                            / (point.0 - other_point.0));
+                }
+                poly = poly + delta.clone();
+            }
+            poly
+        }
+    }
+    impl<T: Num + Copy + PartialOrd + num::pow::Pow<u32, Output = T> + AddAssign> Polynomial<T> {
         pub fn evaluate(&mut self, x: T) -> T {
             let mut answer = T::zero();
             for term in self.get_terms() {
@@ -115,11 +140,12 @@ pub mod polynomials {
     impl<T: Num + Signed + Display> Display for Polynomial<T> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             let mut formatted_equation = String::new();
-            for (i, term) in self.0.iter().enumerate() {
+            let mut actual_i=0;
+            for term in self.0.iter() {
                 if term.coefficient.is_zero() {
                     continue;
                 }
-                if i != 0 && term.coefficient.is_positive() {
+                if actual_i != 0 && term.coefficient.is_positive() {
                     formatted_equation += "+"
                 }
                 if !term.coefficient.is_one() || term.power == 0 {
@@ -131,6 +157,8 @@ pub mod polynomials {
                         formatted_equation += &format!("^{}", term.power);
                     }
                 }
+                actual_i+=1;
+
             }
             write!(f, "{}", formatted_equation)
         }
@@ -249,6 +277,9 @@ pub mod polynomials {
         type Output = DivOutput<T>;
         // Implementation of polynomial long division.
         fn div(self, rhs: Self) -> Self::Output {
+            if rhs.0.is_empty(){
+                panic!("cannot divide by empty polynomial");
+            }
             let binding = rhs.clone();
             let first_divisor_term = binding.0.get(0).unwrap();
             let mut answer = Polynomial::new_from_term_vec(Vec::new());
@@ -264,6 +295,19 @@ pub mod polynomials {
                 remainder,
                 output: answer,
             }
+        }
+    }
+    impl<T: Num + Copy + std::ops::DivAssign> Div<T> for Polynomial<T> {
+        type Output = Polynomial<T>;
+
+        fn div(mut self, rhs: T) -> Self::Output {
+            if rhs.is_zero(){
+                panic!("cannot divide polynomial by zero");
+            }
+            for term in self.0.iter_mut() {
+                term.coefficient /= rhs
+            }
+            self
         }
     }
 }
@@ -295,5 +339,17 @@ mod tests {
             poly1 * poly2,
             Polynomial::new_from_num_vec(vec![5, 31, 69, 87, 84, 36])
         );
+    }
+    #[test]
+    fn poly_from_points() {
+        let poly: Polynomial<f32> = Polynomial::new_from_num_vec(vec![5., 6., 9., 6.]);
+        let points: Vec<(f32, f32)> = vec![
+            (9.0, 4218.0),
+            (3.0,222.0),
+            (4.0,458.0),
+            (7.0, 2078.0),
+        ];
+        let new_poly = Polynomial::new_from_points(points);
+        assert_eq!(new_poly,poly)
     }
 }
