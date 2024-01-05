@@ -22,11 +22,11 @@ pub mod engineer;
 /// assert_eq!(poly1 * poly2,Polynomial::new_from_num_vec(vec![5,31,69,87,84,36]));
 /// ```
 pub mod polynomials {
-    use num::{Num, Signed};
+    use num::{Num, Signed, Float, Zero};
     use std::{
         collections::BTreeMap,
         fmt::Display,
-        ops::{Add, AddAssign, Div, Mul, Sub},
+        ops::{Add, AddAssign, Div, Mul, Sub, DivAssign},
     };
     #[derive(Debug, Clone, PartialEq)]
     pub struct Polynomial<T: Num>(Vec<PolynomialTerm<T>>);
@@ -110,7 +110,7 @@ pub mod polynomials {
             poly
         }
     }
-    impl<T: Num + Copy + PartialOrd + Display + Signed + std::ops::DivAssign+num::Float> Polynomial<T> {
+    impl<T: Num + Copy + PartialOrd + Display + Signed + DivAssign+Float> Polynomial<T> {
         pub fn new_from_points(points: Vec<(T, T)>) -> Self {
             let mut poly = Polynomial::new_from_num_vec(vec![]);
             for point in &points {
@@ -135,6 +135,24 @@ pub mod polynomials {
                 answer += term.coefficient * x.pow(term.power);
             }
             answer
+        }
+    }
+    impl<T:Num+Copy+PartialOrd+AddAssign> Zero for Polynomial<T>{
+        fn zero() -> Self {
+            Polynomial::new_from_num_vec(vec![])
+        }
+
+        fn is_zero(&self) -> bool {
+            let mut total=T::zero();
+            for term in &self.0{
+                total+=term.coefficient;
+            }
+            total.is_zero()
+        }
+    }
+    impl<T:Num+Copy+PartialOrd> num::One for Polynomial<T>{
+        fn one() -> Self {
+            Polynomial::new_from_num_vec(vec![T::one()])
         }
     }
     impl<T: Num + Signed + Display> Display for Polynomial<T> {
@@ -297,7 +315,7 @@ pub mod polynomials {
             }
         }
     }
-    impl<T: Num + Copy + std::ops::DivAssign> Div<T> for Polynomial<T> {
+    impl<T: Num + Copy + DivAssign> Div<T> for Polynomial<T> {
         type Output = Polynomial<T>;
 
         fn div(mut self, rhs: T) -> Self::Output {
