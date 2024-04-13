@@ -1,9 +1,9 @@
-use std::ops::Neg;
+use std::ops::{AddAssign, Neg};
 
 use num::{traits::Pow, Num};
 
 use crate::polynomials::Polynomial;
-pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy>(
+pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy+AddAssign>(
     zeros: Vec<T>,
     leading_coefficient: T,
 ) -> Polynomial<T> {
@@ -16,7 +16,7 @@ pub fn create_polynomial_with_zeros<T: Num + Neg<Output = T> + PartialOrd + Copy
     poly
 }
 
-pub fn create_quadratic_with_vertex<T: Num + Neg<Output = T> + Copy + PartialOrd>(
+pub fn create_quadratic_with_vertex<T: Num + Neg<Output = T> + Copy + PartialOrd+AddAssign>(
     vertex: (T, T),
     leading_coefficient: T,
 ) -> Polynomial<T> {
